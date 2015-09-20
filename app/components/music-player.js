@@ -1,0 +1,1 @@
+export { default } from 'ember-music-player/components/music-player';

@@ -1,0 +1,28 @@
+<div class="player">
+<div class="pl">{{status}}</div>
+<div class="title">{{playing.title}}</div>
+<div class="artist">{{playing.artist}}</div>
+<div class="cover">
+  <img src="{{playing.cover}}" alt="{{playing.artist}}">
+</div>
+
+<div class="controls">
+
+  {{#if isPlaying}}
+  <div class="pause" {{action 'stopAudio'}}> pause </div>
+  {{else}}
+  <div class="play" {{action 'playAudio'}}> play </div>
+  {{/if}}
+
+  <input type="range" min="0" max="64" value={{defaultVolume}} {{action 'setVolume' on='input'}}>
+</div>
+
+<div class="volume"></div>
+<div class="tracker"></div>
+</div>
+
+<ul class="playlist hidden">
+  {{#each playlist as |song|}}
+  <li audiourl={{song.file.mp3}} cover={{song.cover}} artist={{song.artist}}>{{song.title}}</li>
+  {{/each}}
+</ul>
