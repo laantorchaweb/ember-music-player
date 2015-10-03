@@ -3,8 +3,9 @@ import layout from '../templates/components/music-player';
 
 export default Ember.Component.extend({
   layout: layout,
-  isPlaying: false,
   volume: 15,
+
+  isPlaying: false,
 
   playing: {
     title: '',
@@ -15,15 +16,33 @@ export default Ember.Component.extend({
   current_song: null,
 
   handleMeta( song ) {
+    let current_song = this.get('current_song');
+
     this.set('playing.title', song.title);
     this.set('playing.artist', song.artist);
     this.set('playing.cover', song.cover);
+
+    current_song.addEventListener('timeupdate', () => {
+      let time = parseInt(current_song.currentTime, 10);
+
+      this.set('current_time', time);
+    });
+  },
+
+  cleanMeta() {
+    this.set('playing.title', '');
+    this.set('playing.artist', '');
+    this.set('playing.cover', '');
+
+    this.set('current_time', 0);
   },
 
   stopCurrentSong() {
-    if ( this.get('isPlaying') ) {
-      this.get('current_song').pause();
-      this.get('current_song').currentTime = 0;
+    let current_song = this.get('current_song');
+
+    if ( current_song && !current_song.paused ) {
+      current_song.pause();
+      current_song.currentTime = 0;
     }
   },
 
@@ -32,6 +51,32 @@ export default Ember.Component.extend({
 
     this.get('current_song').volume = volume;
   }),
+
+  handlePlaylist( song ) {
+    let current_song = this.get('current_song');
+    const playlist   = this.get('playlist');
+
+    current_song.addEventListener('ended', () => {
+      let current_index = playlist.findIndex( (item) => {
+        return item.title === song.title;
+      });
+
+      let next_index = playlist[current_index + 1];
+
+      if ( next_index ) {
+
+        this.send('playAudio', next_index);
+
+      } else {
+
+        this.send('stopAudio');
+        this.cleanMeta();
+
+      }
+
+
+    });
+  },
 
   actions: {
     playAudio( audio ) {
@@ -48,25 +93,21 @@ export default Ember.Component.extend({
       const current_song = this.get('current_song');
 
       this.handleVolume();
-      current_song.play();
-
+      this.handlePlaylist( song );
       this.handleMeta( song );
 
-      this.set('isPlaying', true);
-      this.set('status', 'playing');
+      current_song.play();
 
-      current_song.addEventListener('timeupdate', () => {
-        let time = parseInt(current_song.currentTime, 10);
-        this.set('current_time', time);
-      });
+      this.set('isPlaying', true);
+
     },
 
     pauseAudio() {
       let current_song = this.get('current_song');
 
-      if ( !current_song.paused ) {
+      if ( current_song && !current_song.paused ) {
         current_song.pause();
-      } else {
+      } else if ( current_song ){
         current_song.play();
       }
     },
