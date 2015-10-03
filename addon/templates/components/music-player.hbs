@@ -15,7 +15,8 @@
   <div class="play" {{action 'playAudio'}}> play </div>
   {{/if}}
 
-  <input type="range" min="0" max="64" value={{defaultVolume}} {{action 'setVolume' on='input'}}>
+  {{input type="range" min="0" max="64" value=volume action='setVolume' on='change'}}
+  {{volume}}
 </div>
 
 <div class="volume"></div>

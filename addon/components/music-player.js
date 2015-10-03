@@ -4,8 +4,7 @@ import layout from '../templates/components/music-player';
 export default Ember.Component.extend({
   layout: layout,
   isPlaying: false,
-  defaultVolume: 15,
-  volume: 0,
+  volume: 15,
 
   playing: {
     title: '',
@@ -28,6 +27,12 @@ export default Ember.Component.extend({
     }
   },
 
+  handleVolume: Ember.observer('volume', function() {
+    let volume = this.get('volume') / 100;
+
+    this.get('current_song').volume = volume;
+  }),
+
   actions: {
     playAudio( audio ) {
       let song = audio;
@@ -42,6 +47,7 @@ export default Ember.Component.extend({
 
       const current_song = this.get('current_song');
 
+      this.handleVolume();
       current_song.play();
 
       this.handleMeta( song );
@@ -72,8 +78,7 @@ export default Ember.Component.extend({
     },
 
     setVolume() {
-      this.set('volume', this.$().find('input[type="range"]').val() / 100);
-      this.get('current_song').volume = this.get('volume');
+      this.handleVolume();
     }
   }
 });
