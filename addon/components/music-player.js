@@ -39,22 +39,29 @@ export default Ember.Component.extend({
       }
 
       this.set('current_song', new Audio('data/' + song.file.mp3));
-      this.get('current_song').play();
+
+      const current_song = this.get('current_song');
+
+      current_song.play();
 
       this.handleMeta( song );
 
       this.set('isPlaying', true);
       this.set('status', 'playing');
 
-      this.get('current_song').addEventListener('timeupdate', () => {
-        let time = parseInt(this.get('current_song').currentTime, 10);
+      current_song.addEventListener('timeupdate', () => {
+        let time = parseInt(current_song.currentTime, 10);
         this.set('current_time', time);
       });
     },
 
     pauseAudio() {
-      if ( this.get('isPlaying') ) {
-        this.get('current_song').pause();
+      let current_song = this.get('current_song');
+
+      if ( !current_song.paused ) {
+        current_song.pause();
+      } else {
+        current_song.play();
       }
     },
 
@@ -65,7 +72,7 @@ export default Ember.Component.extend({
     },
 
     setVolume() {
-      this.set('volume', this.$().find('input[type="range"]').val() / 100)
+      this.set('volume', this.$().find('input[type="range"]').val() / 100);
       this.get('current_song').volume = this.get('volume');
     }
   }
