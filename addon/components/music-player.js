@@ -5,9 +5,7 @@ export default Ember.Component.extend({
   layout: layout,
   isPlaying: false,
   defaultVolume: 15,
-  volume: Ember.computed('defaultVolume', function() {
-    return this.get('defaultVolume') / 100;
-  }),
+  volume: 0,
 
   playing: {
     title: '',
@@ -15,50 +13,60 @@ export default Ember.Component.extend({
     cover: ''
   },
 
-  song: null,
+  current_song: null,
 
-  initialize: Ember.on('didInsertElement', function() {
-    let _this = this;
-    let $this = this.$();
+  handleMeta( song ) {
+    this.set('playing.title', song.title);
+    this.set('playing.artist', song.artist);
+    this.set('playing.cover', song.cover);
+  },
 
-    initAudio($this.find('.playlist li:first-child'));
-
-    $this.find('input[type="range"]').on('change', () => {
-      this.get('song').volume = this.get('volume');
-    });
-
-    this.get('song').volume = this.get('volume');
-
-    function initAudio(elem) {
-      var url = elem.attr('audiourl');
-
-      _this.set('song', new Audio('data/' + url));
-
-      _this.get('song').addEventListener('timeupdate',function (){
-        var curtime = parseInt(_this.get('song').currentTime, 10);
-      });
-
-      $this.find('.playlist li').removeClass('active');
-      elem.addClass('active');
+  stopCurrentSong() {
+    if ( this.get('isPlaying') ) {
+      this.get('current_song').pause();
+      this.get('current_song').currentTime = 0;
     }
-  }),
+  },
 
   actions: {
-    playAudio() {
-      this.get('song').play();
+    playAudio( audio ) {
+      let song = audio;
 
-      this.set('status', 'playing');
-      this.set('playing.title', 'titulo');
+      this.stopCurrentSong();
+
+      if ( !audio ) {
+        song = this.get('playlist')[0];
+      }
+
+      this.set('current_song', new Audio('data/' + song.file.mp3));
+      this.get('current_song').play();
+
+      this.handleMeta( song );
+
       this.set('isPlaying', true);
+      this.set('status', 'playing');
 
+      this.get('current_song').addEventListener('timeupdate', () => {
+        let time = parseInt(this.get('current_song').currentTime, 10);
+        this.set('current_time', time);
+      });
     },
+
+    pauseAudio() {
+      if ( this.get('isPlaying') ) {
+        this.get('current_song').pause();
+      }
+    },
+
     stopAudio() {
-      this.get('song').pause();
+      this.stopCurrentSong();
 
       this.set('isPlaying', false);
     },
+
     setVolume() {
-      this.get('song').volume = this.$().find('input[type="range"]').val() / 100;
+      this.set('volume', this.$().find('input[type="range"]').val() / 100)
+      this.get('current_song').volume = this.get('volume');
     }
   }
 });
