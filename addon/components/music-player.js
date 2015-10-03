@@ -75,10 +75,6 @@ export default Ember.Component.extend({
       this.stopCurrentSong();
 
       this.set('isPlaying', false);
-    },
-
-    setVolume() {
-      this.handleVolume();
     }
   }
 });
